@@ -3,76 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HiddenMoe | Official</title>
+    <title>HiddenMoe | Official Hub</title>
     <style>
-        body { font-family: sans-serif; background: #0a0a0a; color: white; text-align: center; padding: 20px; }
-        .box { max-width: 400px; margin: auto; background: #111; padding: 20px; border-radius: 15px; border: 1px solid #00ff95; }
+        :root { --neon: #00ff95; --bg: #050505; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; text-align: center; padding: 20px; }
+        h1 { color: var(--neon); letter-spacing: 3px; margin-bottom: 30px; }
         
-        /* Navigation Style */
+        .box { max-width: 500px; margin: auto; background: #111; padding: 25px; border-radius: 20px; border: 1px solid #222; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        
         .nav { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .nav-btn { cursor: pointer; padding: 10px; background: #222; border-radius: 5px; color: #fff; font-size: 12px; }
+        .nav-btn { cursor: pointer; padding: 10px 15px; background: #1a1a1a; border-radius: 8px; border: 1px solid #333; transition: 0.3s; }
+        .nav-btn:hover { border-color: var(--neon); }
         
-        /* Tab Content */
         .tab-content { display: none; }
-        .active-tab { display: block; }
+        .active-tab { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        .btn { display: block; padding: 15px; margin: 10px 0; border-radius: 8px; text-decoration: none; font-weight: bold; }
-        .btn-red { background: red; color: white; }
-        .btn-lock { background: #333; color: #777; pointer-events: none; }
-        .active { background: #00ff95 !important; color: black !important; pointer-events: auto !important; }
-        .list { text-align: left; margin-bottom: 20px; }
-        .item { padding: 5px 0; border-bottom: 1px solid #222; font-size: 14px; }
-    </style>
-</head>
-<body>
-
-    <h1>HIDDENMOE</h1>
-
-    <div class="nav">
-        <div class="nav-btn" onclick="openTab('home')">Home</div>
-        <div class="nav-btn" onclick="openTab('mods')">Mods & Packs</div>
-        <div class="nav-btn" onclick="openTab('social')">Social</div>
-    </div>
-
-    <div class="box">
-        <div id="home" class="tab-content active-tab">
-            <h2>Willkommen!</h2>
-            <p>Diese Website ist noch im Aufbau. Hier findest du bald alles rund um meine Projekte.</p>
-        </div>
-
-        <div id="mods" class="tab-content">
-            <div class="list">
-                <div class="item">1. Health Bar Mod <span style="float:right; color:#00ff95;">AKTIV</span></div>
-                <div class="item">2. ... <span style="float:right; color:#555;">Soon</span></div>
-            </div>
-            <p>Erledige die Schritte:</p>
-            <a href="https://www.youtube.com/@who_is_moe404_08?sub_confirmation=1" target="_blank" class="btn btn-red" onclick="unlock(1)">1. Abo dalassen</a>
-            <a href="https://www.youtube.com/@who_is_moe404_08" target="_blank" class="btn btn-red" onclick="unlock(2)">2. Video liken</a>
-            <a href="https://www.mediafire.com/file/bwpd7b39jshh23b/Health+Bar.mcpack/file" id="dl" class="btn btn-lock">3. Download gesperrt</a>
-        </div>
-
-        <div id="social" class="tab-content">
-            <h2>Folge mir!</h2>
-            <a href="https://www.youtube.com/@who_is_moe404_08" target="_blank" class="btn" style="background:#555;">YouTube</a>
-        </div>
-    </div>
-
-    <script>
-        // Tab Logik
-        function openTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
-            document.getElementById(tabName).classList.add('active-tab');
-        }
-
-        // Download Unlock Logik
-        let s1=false, s2=false;
-        function unlock(n) {
-            if(n==1) s1=true; if(n==2) s2=true;
-            if(s1 && s2) { 
-                document.getElementById('dl').classList.add('active');
-                document.getElementById('dl').innerText = "JETZT DOWNLOADEN";
-            }
-        }
-    </script>
-</body>
-</html>
+        .btn { display: block; padding: 15px; margin: 12px 0; border-radius: 10px; text-decoration: none; font-weight: bold; transition: 0.3s; cursor: pointer; border: none; }
+        .btn-action { background: #222; color: #fff; border: 1px solid #444; }
+        .btn-lock { background: #111; color: #555; pointer-events: none; border: 1px dashed #333; }
+        .btn-active { background: var(--neon) !important; color: #000 !important; pointer-events: auto !important; box-shadow: 0 0 15px var(--neon); }
+        
+        footer { margin-top: 50px;
+                
