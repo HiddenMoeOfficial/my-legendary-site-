@@ -3,26 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HiddenMoe | Official Hub</title>
+    <title>HiddenMoe | Offiziell</title>
     <style>
-        :root { --neon: #00ff95; --bg: #050505; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; text-align: center; padding: 20px; }
-        h1 { color: var(--neon); letter-spacing: 3px; margin-bottom: 30px; }
+        body { background-color: #050505; color: #ffffff; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #00ff95; font-size: 3rem; margin-top: 20px; }
         
-        .box { max-width: 500px; margin: auto; background: #111; padding: 25px; border-radius: 20px; border: 1px solid #222; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .content-box { max-width: 500px; margin: 40px auto; text-align: left; }
         
-        .nav { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .nav-btn { cursor: pointer; padding: 10px 15px; background: #1a1a1a; border-radius: 8px; border: 1px solid #333; transition: 0.3s; }
-        .nav-btn:hover { border-color: var(--neon); }
+        h2 { color: #00ff95; border-bottom: 2px solid #00ff95; display: inline-block; }
         
-        .tab-content { display: none; }
-        .active-tab { display: block; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .list-item { background: #111; padding: 15px; margin: 10px 0; border: 1px solid #222; border-radius: 8px; }
         
-        .btn { display: block; padding: 15px; margin: 12px 0; border-radius: 10px; text-decoration: none; font-weight: bold; transition: 0.3s; cursor: pointer; border: none; }
-        .btn-action { background: #222; color: #fff; border: 1px solid #444; }
-        .btn-lock { background: #111; color: #555; pointer-events: none; border: 1px dashed #333; }
-        .btn-active { background: var(--neon) !important; color: #000 !important; pointer-events: auto !important; box-shadow: 0 0 15px var(--neon); }
-        
-        footer { margin-top: 50px;
-                
+        /* Unlocker Button Style */
+        .btn-action { display: block; width: 100%; padding: 10px; margin-top: 10px; background: #222; color: white; text-decoration: none; border-radius: 5px; text-align: center; border: 1px solid #444; }
+        #download-btn { background: #333; color: #777; pointer-events: none; border: 1px dashed #555; }
+        .active { background: #00ff95 !important; color: black !important; font-weight: bold; pointer-events: auto !important; }
+
+        .bau-hinweis { color: #555; font-style: italic; margin-top: 40px; }
+        footer { font-size: 0.7rem; color: #333; margin-top: 50px; }
+    </style>
+</head>
+<body>
+
+    <h1>HIDDENMOE</h1>
+
+    <div class="content-box">
+        <h2>Mods</h2>
+        <div class="list-item">
+            1. Minecraft Mod<br>
+            <a href="URL_DEINES_KANALS" target="_blank" class="btn-action" onclick="checkUnlock()">1. Kanal abonnieren</a>
+            <a href="URL_DEINES_VIDEOS" target="_blank" class="btn-action" onclick="checkUnlock()">2. Video liken</a>
+            <a href="URL_DEINES_MEDIAFIRE_LINKS" id="download-btn" class="btn-action">3. Mod herunterladen</a>
+        </div>
+        <div class="list-item">2. Coming soon...</div>
+        <div class="list-item">3. Coming soon...</div>
+        <div class="list-item">4. Coming soon...</div>
+        <div class="list-item">5. Coming soon...</div>
+
+        <h2>Soziale Medien</h2>
+        <div class="list-item">YouTube, Discord, etc.</div>
+
+        <h2>Projekte</h2>
+        <div class="list-item">Weitere Projekte folgen bald.</div>
+
+        <p class="bau-hinweis">Diese Website befindet sich aktuell im Bau.</p>
+    </div>
+
+    <footer>
+        &copy; 2026 HIDDENMOE. Diese Website ist legal und befolgt alle Rechte.
+    </footer>
+
+    <script>
+        let clicks = 0;
+        function checkUnlock() {
+            clicks++;
+            if(clicks >= 2) {
+                const dl = document.getElementById('download-btn');
+                dl.classList.add('active');
+                dl.innerText = "Jetzt Downloaden!";
+            }
+        }
+    </script>
+</body>
+</html>
