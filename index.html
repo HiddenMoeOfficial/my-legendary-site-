@@ -1,70 +1,546 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HiddenMoe | Official</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Color Blaster - Moe Games</title>
     <style>
-        :root { --neon: #00ff95; --bg: #050505; }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
-        
-        header { text-align: center; padding: 80px 20px; }
-        h1 { color: var(--neon); font-size: 3.5rem; margin: 0; letter-spacing: 2px; }
-        .subtitle { color: #666; font-style: italic; margin-top: 10px; }
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #050505;
+            color: #eee;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            touch-action: none;
+        }
 
-        .container { width: 90%; max-width: 600px; }
-        
-        .section { background: #111; padding: 25px; margin: 20px 0; border-radius: 15px; border: 1px solid #222; transition: 0.4s; cursor: pointer; }
-        .section:hover { border-color: var(--neon); transform: scale(1.02); box-shadow: 0 0 15px rgba(0, 255, 149, 0.1); }
-        .section h2 { margin: 0; color: var(--neon); }
-        .hidden-content { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
 
-        a { color: var(--neon); text-decoration: none; font-weight: bold; }
-        
-        footer { margin-top: 50px; padding: 30px; font-size: 0.8rem; color: #444; text-align: center; }
+        canvas {
+            display: block;
+        }
+
+        /* --- Menü Styles --- */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.5s;
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, #ff0055, #00bbff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(255, 0, 85, 0.5);
+        }
+
+        .made-by {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: #aaa;
+        }
+
+        .button {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background: transparent;
+            border: 2px solid #00bbff;
+            color: #00bbff;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 10px;
+        }
+
+        .button:active {
+            background-color: #00bbff;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 187, 255, 0.7);
+        }
+
+        /* --- In-Game UI Styles --- */
+        #ui-bar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- Handy-Steuerung Styles --- */
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 5;
+        }
+
+        .control-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.5);
+            transition: all 0.2s;
+        }
+
+        .control-btn:active {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        #color-switch-btn {
+            border-color: #ff0055; /* Startfarbe */
+            color: #ff0055;
+        }
+
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Welcome to the HiddenMoe Official Website</h1>
-        <p class="subtitle">Work in progress... something big is coming.</p>
-    </header>
-
-    <div class="container">
-        <div class="section" onclick="toggleContent('social')">
-            <h2>Social Media 🌐</h2>
-            <div id="social" class="hidden-content">
-                <p>Follow me on my journey:</p>
-                <a href="https://www.youtube.com/@who_is_moe404_08" target="_blank">YouTube Channel</a>
-            </div>
-        </div>
-
-        <div class="section" onclick="toggleContent('mods')">
-            <h2>Minecraft Mods 🛠️</h2>
-            <div id="mods" class="hidden-content">
-                <p>Custom mods developed by HiddenMoe.</p>
-                <p style="color: #555;">Stay tuned for the first release!</p>
-            </div>
-        </div>
-
-        <div class="section" onclick="toggleContent('soon')">
-            <h2>Coming Soon... 🚀</h2>
-            <div id="soon" class="hidden-content">
-                <p>New projects, tutorials, and more updates are currently being built.</p>
-            </div>
-        </div>
+<div id="game-container">
+    <div id="start-menu" class="overlay">
+        <h1>COLOR BLASTER</h1>
+        <p class="made-by">GAME MADE BY MOE</p>
+        <button class="button" onclick="startGame()">Starten</button>
     </div>
 
-    <footer>
-        &copy; 2026 HiddenMoe – All rights reserved. This website and its content are protected.
-    </footer>
+    <div id="gameover-menu" class="overlay hidden">
+        <h1 style="color: #ff0055;">GAME OVER</h1>
+        <p class="made-by">Deine Punktzahl: <span id="final-score">0</span></p>
+        <button class="button" onclick="startGame()">Nochmal?</button>
+        <button class="button" onclick="showMainMenu()">Menü</button>
+    </div>
 
-    <script>
-        function toggleContent(id) {
-            const content = document.getElementById(id);
-            content.style.display = content.style.display === "block" ? "none" : "block";
+    <div id="ui-bar">
+        <div class="stat-box">Score: <span id="score-display">0</span></div>
+        <div class="stat-box">Level: <span id="level-display">1</span></div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="controls">
+        <div class="control-btn" id="left-btn">←</div>
+        <div class="control-btn" id="right-btn">→</div>
+        <div class="control-btn" id="color-switch-btn">☄</div>
+        <div class="control-btn" id="fire-btn">▲</div>
+    </div>
+</div>
+
+<script>
+    // --- Globale Variablen & Setup ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('score-display');
+    const levelDisplay = document.getElementById('level-display');
+    const finalScoreDisplay = document.getElementById('final-score');
+    const startMenu = document.getElementById('start-menu');
+    const gameoverMenu = document.getElementById('gameover-menu');
+    const colorSwitchBtn = document.getElementById('color-switch-btn');
+
+    let gameWidth, gameHeight;
+    let player, bullets, meteors, particles;
+    let score, level, isGameOver, gameLoopId;
+    let meteorSpawnTimer, meteorSpawnRate;
+    let isTouchingLeft = false, isTouchingRight = false;
+
+    // Farben für das Spiel
+    const COLORS = {
+        red: { main: '#ff0055', glow: 'rgba(255, 0, 85, 0.5)' },
+        blue: { main: '#00bbff', glow: 'rgba(0, 187, 255, 0.5)' },
+        green: { main: '#00ff88', glow: 'rgba(0, 255, 136, 0.5)' }
+    };
+    const colorKeys = Object.keys(COLORS);
+
+    // --- Klassen ---
+
+    class Player {
+        constructor() {
+            this.width = 50;
+            this.height = 60;
+            this.x = gameWidth / 2 - this.width / 2;
+            this.y = gameHeight - 150; // Platz für Buttons lassen
+            this.speed = 7;
+            this.colorIndex = 0; // Startet mit Rot
+            this.color = COLORS[colorKeys[this.colorIndex]].main;
         }
-    </script>
+
+        draw() {
+            // Schiffskörper
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.moveTo(this.x + this.width / 2, this.y);
+            ctx.lineTo(this.x, this.y + this.height);
+            ctx.lineTo(this.x + this.width, this.y + this.height);
+            ctx.fill();
+
+            // Cockpit-Fenster (Moe-Logo Style)
+            ctx.fillStyle = '#fff';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('M', this.x + this.width / 2, this.y + this.height - 15);
+
+            // Triebwerks-Glühen
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = this.color;
+            ctx.fillRect(this.x + this.width / 4, this.y + this.height, this.width / 2, 5);
+            ctx.shadowBlur = 0; // Reset für andere Objekte
+        }
+
+        update() {
+            if (isTouchingLeft) this.x -= this.speed;
+            if (isTouchingRight) this.x += this.speed;
+
+            // Bildschirmränder einhalten
+            if (this.x < 0) this.x = 0;
+            if (this.x > gameWidth - this.width) this.x = gameWidth - this.width;
+        }
+
+        switchColor() {
+            this.colorIndex = (this.colorIndex + 1) % colorKeys.length;
+            this.color = COLORS[colorKeys[this.colorIndex]].main;
+            // Button-Farbe anpassen
+            colorSwitchBtn.style.borderColor = this.color;
+            colorSwitchBtn.style.color = this.color;
+        }
+    }
+
+    class Bullet {
+        constructor(x, y, color) {
+            this.x = x;
+            this.y = y;
+            this.width = 6;
+            this.height = 20;
+            this.speed = 10;
+            this.color = color;
+        }
+
+        draw() {
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = this.color;
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            ctx.shadowBlur = 0;
+        }
+
+        update() {
+            this.y -= this.speed;
+        }
+    }
+
+    class Meteor {
+        constructor() {
+            this.size = Math.random() * 30 + 20; // 20 bis 50
+            this.x = Math.random() * (gameWidth - this.size);
+            this.y = -this.size;
+            this.speed = Math.random() * 2 + 1 + (level * 0.5); // Schneller mit Level
+            // Zufällige Farbe aus der Liste
+            this.colorKey = colorKeys[Math.floor(Math.random() * colorKeys.length)];
+            this.color = COLORS[this.colorKey].main;
+            this.rotation = Math.random() * Math.PI * 2;
+            this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+        }
+
+        draw() {
+            ctx.save();
+            ctx.translate(this.x + this.size / 2, this.y + this.size / 2);
+            ctx.rotate(this.rotation);
+            
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = COLORS[this.colorKey].glow;
+            ctx.fillStyle = this.color;
+            
+            // Unregelmäßige Meteor-Form zeichnen
+            ctx.beginPath();
+            ctx.moveTo(0, -this.size/2);
+            ctx.lineTo(this.size/3, -this.size/3);
+            ctx.lineTo(this.size/2, 0);
+            ctx.lineTo(this.size/3, this.size/3);
+            ctx.lineTo(0, this.size/2);
+            ctx.lineTo(-this.size/3, this.size/3);
+            ctx.lineTo(-this.size/2, 0);
+            ctx.lineTo(-this.size/3, -this.size/3);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.restore();
+            ctx.shadowBlur = 0;
+        }
+
+        update() {
+            this.y += this.speed;
+            this.rotation += this.rotationSpeed;
+        }
+    }
+
+    class Particle {
+        constructor(x, y, color) {
+            this.x = x;
+            this.y = y;
+            this.size = Math.random() * 4 + 1;
+            this.speedX = (Math.random() - 0.5) * 8;
+            this.speedY = (Math.random() - 0.5) * 8;
+            this.life = 1.0; // 100% Leben
+            this.decay = Math.random() * 0.03 + 0.02; // Wie schnell es verschwindet
+            this.color = color;
+        }
+
+        draw() {
+            ctx.globalAlpha = this.life;
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+        }
+
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            this.life -= this.decay;
+        }
+    }
+
+    // --- Core Game Funktionen ---
+
+    function resizeCanvas() {
+        gameWidth = window.innerWidth;
+        gameHeight = window.innerHeight;
+        canvas.width = gameWidth;
+        canvas.height = gameHeight;
+        if (player) player.y = gameHeight - 150; // Position anpassen
+    }
+
+    function initGame() {
+        resizeCanvas();
+        player = new Player();
+        bullets = [];
+        meteors = [];
+        particles = [];
+        score = 0;
+        level = 1;
+        isGameOver = false;
+        meteorSpawnTimer = 0;
+        meteorSpawnRate = 100; // Frames zwischen Spawns
+        scoreDisplay.innerText = score;
+        levelDisplay.innerText = level;
+    }
+
+    function createExplosion(x, y, color) {
+        for (let i = 0; i < 15; i++) {
+            particles.push(new Particle(x, y, color));
+        }
+    }
+
+    function update() {
+        player.update();
+        
+        // Kugeln updaten & aufräumen
+        bullets.forEach((b, index) => {
+            b.update();
+            if (b.y < -b.height) bullets.splice(index, 1);
+        });
+
+        // Meteoriten spwannen & updaten
+        meteorSpawnTimer++;
+        if (meteorSpawnTimer >= meteorSpawnRate) {
+            meteors.push(new Meteor());
+            meteorSpawnTimer = 0;
+            // Spawn-Rate leicht erhöhen
+            meteorSpawnRate = Math.max(20, 100 - (level * 5));
+        }
+
+        meteors.forEach((m, mIndex) => {
+            m.update();
+            
+            // Kollision mit Boden (Punktabzug)
+            if (m.y > gameHeight) {
+                meteors.splice(mIndex, 1);
+                score = Math.max(0, score - 5);
+                scoreDisplay.innerText = score;
+                createExplosion(m.x + m.size/2, gameHeight, '#555'); // Graue Mini-Explosion
+            }
+
+            // Kollision mit Spieler (Game Over)
+            if (m.x < player.x + player.width &&
+                m.x + m.size > player.x &&
+                m.y < player.y + player.height &&
+                m.y + m.size > player.y) {
+                endGame();
+            }
+
+            // Kollision mit Kugeln
+            bullets.forEach((b, bIndex) => {
+                if (b.x < m.x + m.size &&
+                    b.x + b.width > m.x &&
+                    b.y < m.y + m.size &&
+                    b.y + b.height > m.y) {
+                    
+                    // Kugel entfernen
+                    bullets.splice(bIndex, 1);
+
+                    // Farbe prüfen!
+                    if (b.color === m.color) {
+                        // Richtige Farbe -> Punkte + Explosion
+                        meteors.splice(mIndex, 1);
+                        score += 10;
+                        scoreDisplay.innerText = score;
+                        createExplosion(m.x + m.size/2, m.y + m.size/2, m.color);
+                        
+                        // Level Up prüfen
+                        if (score > 0 && score % 100 === 0) {
+                            level++;
+                            levelDisplay.innerText = level;
+                            // Kurzer Blitz-Effekt?
+                            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                            ctx.fillRect(0,0,gameWidth,gameHeight);
+                        }
+                    } else {
+                        // Falsche Farbe -> Meteor wird schneller!
+                        m.speed += 2;
+                        m.color = '#fff'; // Wird weiß als Warnung
+                        createExplosion(m.x + m.size/2, m.y + m.size/2, '#fff');
+                    }
+                }
+            });
+        });
+
+        // Partikel updaten
+        particles.forEach((p, index) => {
+            p.update();
+            if (p.life <= 0) particles.splice(index, 1);
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, gameWidth, gameHeight);
+
+        // Hintergrund-Sterne (sehr subtil)
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        for(let i=0; i<50; i++) {
+            ctx.fillRect(Math.random()*gameWidth, Math.random()*gameHeight, 1, 1);
+        }
+
+        particles.forEach(p => p.draw());
+        bullets.forEach(b => b.draw());
+        meteors.forEach(m => m.draw());
+        player.draw();
+    }
+
+    function gameLoop() {
+        update();
+        draw();
+        gameLoopId = requestAnimationFrame(gameLoop);
+    }
+
+    // --- UI & Event Handling ---
+
+    function startGame() {
+        startMenu.classList.add('hidden');
+        gameoverMenu.classList.add('hidden');
+        initGame();
+        if (gameLoopId) cancelAnimationFrame(gameLoopId);
+        gameLoop();
+    }
+
+    function endGame() {
+        isGameOver = true;
+        cancelAnimationFrame(gameLoopId);
+        finalScoreDisplay.innerText = score;
+        gameoverMenu.classList.remove('hidden');
+    }
+
+    function showMainMenu() {
+        gameoverMenu.classList.add('hidden');
+        startMenu.classList.remove('hidden');
+        ctx.clearRect(0, 0, gameWidth, gameHeight); // Leinwand leeren
+    }
+
+    function fireBullet() {
+        if (!isGameOver && player) {
+            bullets.push(new Bullet(player.x + player.width / 2 - 3, player.y, player.color));
+        }
+    }
+
+    // --- Touch Event Listener für die Buttons ---
+    const setupControls = () => {
+        // Links
+        const leftBtn = document.getElementById('left-btn');
+        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isTouchingLeft = true; });
+        leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); isTouchingLeft = false; });
+        
+        // Rechts
+        const rightBtn = document.getElementById('right-btn');
+        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isTouchingRight = true; });
+        rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); isTouchingRight = false; });
+        
+        // Farbe wechseln
+        colorSwitchBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if(player) player.switchColor(); });
+        
+        // Schießen
+        const fireBtn = document.getElementById('fire-btn');
+        fireBtn.addEventListener('touchstart', (e) => { e.preventDefault(); fireBullet(); });
+
+        // Maus-Unterstützung (zum Testen am PC)
+        leftBtn.addEventListener('mousedown', () => isTouchingLeft = true);
+        leftBtn.addEventListener('mouseup', () => isTouchingLeft = false);
+        rightBtn.addEventListener('mousedown', () => isTouchingRight = true);
+        rightBtn.addEventListener('mouseup', () => isTouchingRight = false);
+        colorSwitchBtn.addEventListener('mousedown', () => if(player) player.switchColor());
+        fireBtn.addEventListener('mousedown', fireBullet);
+    };
+
+    // Initialisierung
+    window.addEventListener('resize', resizeCanvas);
+    setupControls();
+    resizeCanvas(); // Erstes Mal setzen
+
+</script>
+
 </body>
 </html>
