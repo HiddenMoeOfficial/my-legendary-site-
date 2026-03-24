@@ -1,309 +1,68 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Moe Kart Ultra - Mobile Edition</title>
-    <style>
-        :root { --neon-blue: #00f2ff; --neon-pink: #ff0077; }
-        body { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: 'Courier New', Courier, monospace; color: white; user-select: none; touch-action: none; }
-        canvas { display: block; width: 100vw; height: 100vh; }
+<meta charset="UTF-8">
+<title>Random Game</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+        background: #111;
+        color: white;
+        text-align: center;
+    }
 
-        /* Menü-System */
-        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; transition: 0.5s; }
-        .hidden { display: none !important; opacity: 0; }
-        
-        h1 { font-size: 3rem; text-transform: uppercase; letter-spacing: 5px; color: var(--neon-blue); text-shadow: 0 0 20px var(--neon-blue); margin-bottom: 10px; text-align: center; }
-        .made-by { position: absolute; bottom: 10px; right: 10px; font-size: 14px; color: rgba(255,255,255,0.5); font-weight: bold; }
-        
-        .btn { background: transparent; border: 2px solid var(--neon-blue); color: var(--neon-blue); padding: 15px 40px; font-size: 20px; cursor: pointer; border-radius: 5px; transition: 0.3s; margin: 10px; text-transform: uppercase; }
-        .btn:active { background: var(--neon-blue); color: black; box-shadow: 0 0 30px var(--neon-blue); }
+    #score {
+        font-size: 24px;
+        margin-top: 20px;
+    }
 
-        /* UI */
-        #ui { position: absolute; top: 10px; left: 10px; pointer-events: none; width: 100%; display: flex; justify-content: space-between; padding: 0 20px; box-sizing: border-box; }
-        .stat { background: rgba(0,0,0,0.5); padding: 10px; border-left: 4px solid var(--neon-pink); font-size: 18px; }
+    #target {
+        width: 50px;
+        height: 50px;
+        background: red;
+        position: absolute;
+        border-radius: 50%;
+        cursor: pointer;
+    }
 
-        /* Mobile Controls */
-        #controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 50; }
-        .ctrl-btn { width: 80px; height: 80px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; -webkit-tap-highlight-color: transparent; }
-        .ctrl-btn:active { background: rgba(255,255,255,0.4); transform: scale(1.1); }
-    </style>
+    #footer {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        font-size: 14px;
+        opacity: 0.7;
+    }
+</style>
 </head>
 <body>
 
-    <div id="start-menu" class="overlay">
-        <h1>MOE KART<br>ULTRA</h1>
-        <div style="margin-bottom: 20px;">
-            <label>SOUND: </label>
-            <button class="btn" id="sound-toggle" style="padding: 5px 15px; font-size: 14px;">AN</button>
-        </div>
-        <button class="btn" onclick="startGame()">Rennen Starten</button>
-        <div class="made-by">Made by Moe</div>
-    </div>
-
-    <div id="finish-menu" class="overlay hidden">
-        <h1 id="status-text">ZIEL!</h1>
-        <p id="final-score">Punkte: 0</p>
-        <button class="btn" onclick="location.reload()">Hauptmenü</button>
-        <div class="made-by">Made by Moe</div>
-    </div>
-
-    <div id="ui">
-        <div class="stat">SCORE: <span id="score">0</span></div>
-        <div class="stat">LEVEL: <span id="level">1</span></div>
-    </div>
-
-    <canvas id="canvas"></canvas>
-
-    <div id="controls">
-        <div class="ctrl-btn" id="btn-left">◀</div>
-        <div class="ctrl-btn" id="btn-fire" style="border-color: var(--neon-pink); color: var(--neon-pink);">🔥</div>
-        <div class="ctrl-btn" id="btn-right">▶</div>
-    </div>
+<div id="score">Score: 0</div>
+<div id="target"></div>
+<div id="footer">Made by Moe</div>
 
 <script>
-/**
- * MOE KART ULTRA ENGINE
- * Ein dynamischer Pseudo-3D Racer mit Boss-Kampf
- */
-
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const scoreEl = document.getElementById("score");
-const levelEl = document.getElementById("level");
-
-// Spiel-Variablen
-let width, height;
-let playerX = 0; // Spieler Position (-1 bis 1)
-let speed = 0;
-let distance = 0;
 let score = 0;
-let level = 1;
-let isRunning = false;
-let soundEnabled = true;
-let bullets = [];
-let enemies = [];
-let bossActive = false;
-let bossHP = 100;
+const target = document.getElementById("target");
+const scoreDisplay = document.getElementById("score");
 
-// Input Handling
-let keys = { left: false, right: false };
-document.getElementById("btn-left").ontouchstart = () => keys.left = true;
-document.getElementById("btn-left").ontouchend = () => keys.left = false;
-document.getElementById("btn-right").ontouchstart = () => keys.right = true;
-document.getElementById("btn-right").ontouchend = () => keys.right = false;
-document.getElementById("btn-fire").ontouchstart = () => shoot();
-
-document.getElementById("sound-toggle").onclick = function() {
-    soundEnabled = !soundEnabled;
-    this.innerText = soundEnabled ? "AN" : "AUS";
-};
-
-function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-}
-window.onresize = resize;
-resize();
-
-// Spieler Funktionen
-function shoot() {
-    if(!isRunning) return;
-    bullets.push({ x: playerX, y: 0.9, speed: 0.05 });
-    if(soundEnabled) { /* Hier könnte Sound-Code hin */ }
+function moveTarget() {
+    const x = Math.random() * (window.innerWidth - 50);
+    const y = Math.random() * (window.innerHeight - 50);
+    target.style.left = x + "px";
+    target.style.top = y + "px";
 }
 
-// Gegner Klassen
-class Enemy {
-    constructor(isBoss = false) {
-        this.z = 2000; // Entfernung
-        this.x = (Math.random() * 2 - 1);
-        this.isBoss = isBoss;
-        this.hp = isBoss ? 100 : 1;
-        this.w = isBoss ? 0.8 : 0.2;
-    }
-}
+target.addEventListener("click", () => {
+    score++;
+    scoreDisplay.textContent = "Score: " + score;
+    moveTarget();
+});
 
-function startGame() {
-    document.getElementById("start-menu").classList.add("hidden");
-    isRunning = true;
-    score = 0;
-    level = 1;
-    speed = 0;
-    distance = 0;
-    enemies = [];
-    bullets = [];
-    bossActive = false;
-    loop();
-}
-
-function loop() {
-    if(!isRunning) return;
-
-    update();
-    draw();
-
-    requestAnimationFrame(loop);
-}
-
-function update() {
-    speed = Math.min(speed + 0.2, 15 + level * 2);
-    distance += speed;
-    score += Math.floor(speed / 10);
-    scoreEl.innerText = score;
-
-    // Bewegung
-    if(keys.left) playerX -= 0.04;
-    if(keys.right) playerX += 0.04;
-    playerX = Math.max(-1, Math.min(1, playerX));
-
-    // Level Logik
-    if(score > level * 1000 && !bossActive) {
-        level++;
-        levelEl.innerText = level;
-        if(level % 3 === 0) spawnBoss();
-    }
-
-    // Gegner spawnen
-    if(!bossActive && Math.random() < 0.03) {
-        enemies.push(new Enemy());
-    }
-
-    // Update Projectiles
-    bullets.forEach((b, i) => {
-        b.y -= b.speed;
-        if(b.y < 0) bullets.splice(i, 1);
-    });
-
-    // Update Enemies
-    enemies.forEach((e, i) => {
-        e.z -= speed;
-        
-        // Kollision mit Schüssen
-        bullets.forEach((b, bi) => {
-            let bulletScreenX = b.x;
-            if(e.z < 500 && Math.abs(e.x - b.x) < e.w) {
-                e.hp--;
-                bullets.splice(bi, 1);
-                score += 50;
-                if(e.hp <= 0) {
-                    if(e.isBoss) {
-                        bossActive = false;
-                        score += 5000;
-                    }
-                    enemies.splice(i, 1);
-                }
-            }
-        });
-
-        // Kollision mit Spieler
-        if(e.z < 50 && Math.abs(e.x - playerX) < 0.3) {
-            gameOver();
-        }
-
-        if(e.z < -100) enemies.splice(i, 1);
-    });
-}
-
-function spawnBoss() {
-    bossActive = true;
-    enemies.push(new Enemy(true));
-}
-
-function gameOver() {
-    isRunning = false;
-    document.getElementById("status-text").innerText = "GEKRASHT!";
-    document.getElementById("final-score").innerText = "Score: " + score;
-    document.getElementById("finish-menu").classList.remove("hidden");
-}
-
-function draw() {
-    // 1. Hintergrund (Himmel)
-    let grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0, "#000814");
-    grad.addColorStop(0.5, "#001d3d");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, width, height);
-
-    // 2. Straße (Pseudo 3D)
-    let horizon = height * 0.5;
-    for(let i = 0; i < height / 2; i += 2) {
-        let z = i / (height / 2); // 0 bis 1
-        let w = width * z;
-        let lineY = horizon + i;
-        
-        // Straßenfarbe animieren
-        let color = (Math.floor((distance - i * 5) / 100) % 2 === 0) ? "#333" : "#444";
-        ctx.fillStyle = color;
-        ctx.fillRect(width/2 - w/2, lineY, w, 2);
-
-        // Seitenstreifen (Neon)
-        ctx.fillStyle = "var(--neon-blue)";
-        ctx.fillRect(width/2 - w/2 - 5, lineY, 5, 2);
-        ctx.fillRect(width/2 + w/2, lineY, 5, 2);
-    }
-
-    // 3. Gegner zeichnen
-    enemies.forEach(e => {
-        let scale = 1000 / e.z;
-        let x = width/2 + (e.x - playerX) * width * scale;
-        let y = horizon + (height/2) * scale;
-        let s = e.w * width * scale;
-
-        if(e.z > 0) {
-            ctx.fillStyle = e.isBoss ? "var(--neon-pink)" : "white";
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = ctx.fillStyle;
-            ctx.fillRect(x - s/2, y - s, s, s);
-            
-            if(e.isBoss) {
-                // HP Balken Boss
-                ctx.fillStyle = "red";
-                ctx.fillRect(x - 50, y - s - 30, 100, 10);
-                ctx.fillStyle = "lime";
-                ctx.fillRect(x - 50, y - s - 30, e.hp, 10);
-            }
-        }
-    });
-
-    // 4. Spieler Auto
-    let pX = width/2;
-    let pY = height - 180;
-    
-    // Schatten/Glow
-    ctx.shadowBlur = 30;
-    ctx.shadowColor = "var(--neon-blue)";
-    
-    // Karosserie
-    ctx.fillStyle = "var(--neon-blue)";
-    ctx.beginPath();
-    ctx.moveTo(pX - 40, pY + 60);
-    ctx.lineTo(pX + 40, pY + 60);
-    ctx.lineTo(pX + 25, pY);
-    ctx.lineTo(pX - 25, pY);
-    ctx.fill();
-
-    // Moe Label
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "black";
-    ctx.font = "bold 12px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("MOE 01", pX, pY + 45);
-
-    // Projektile
-    bullets.forEach(b => {
-        let scale = b.y;
-        ctx.fillStyle = "yellow";
-        ctx.fillRect(width/2 + (b.x - playerX) * width * (1-b.y), height * b.y, 5, 20);
-    });
-}
-
-// Start-Animation
-ctx.fillStyle = "white";
-ctx.textAlign = "center";
-ctx.font = "20px Courier";
-ctx.fillText("Lade Engine...", width/2, height/2);
-
+// Startposition
+moveTarget();
 </script>
+
 </body>
 </html>
